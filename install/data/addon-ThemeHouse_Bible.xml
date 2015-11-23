@@ -1,0 +1,882 @@
+<?xml version="1.0" encoding="utf-8"?>
+<addon addon_id="ThemeHouse_Bible" title="[⌂] Bible" version_string="1.2.1a" version_id="1447261019" url="http://xf.themehouse.io/" install_callback_class="ThemeHouse_Install" install_callback_method="install" uninstall_callback_class="ThemeHouse_Install" uninstall_callback_method="uninstall">
+  <admin_navigation>
+    <navigation navigation_id="bibleBooks" parent_navigation_id="bibles" display_order="10" link="bible-books" admin_permission_id="bible" debug_only="0" hide_no_children="0"/>
+    <navigation navigation_id="bibles" parent_navigation_id="applications" display_order="16" link="bibles" admin_permission_id="bible" debug_only="0" hide_no_children="0"/>
+    <navigation navigation_id="listBibles" parent_navigation_id="bibles" display_order="1" link="bibles" admin_permission_id="bible" debug_only="0" hide_no_children="0"/>
+  </admin_navigation>
+  <admin_permissions>
+    <admin_permission admin_permission_id="bible" display_order="5000"/>
+  </admin_permissions>
+  <admin_style_properties/>
+  <admin_templates>
+    <template title="th_bible_delete_bible"><![CDATA[<xen:title>{xen:phrase th_confirm_deletion_of_bible_bible}: {$bible.name}</xen:title>
+
+<xen:h1>{xen:phrase th_confirm_deletion_of_bible_bible}</xen:h1>
+
+<xen:navigation>
+	<xen:breadcrumb href="{xen:adminlink 'bibles/edit', $bible}">{$bible.name}</xen:breadcrumb>
+</xen:navigation>
+
+<xen:require css="delete_confirmation.css" />
+
+<xen:form action="{xen:adminlink 'bibles/delete', $bible}" class="deleteConfirmForm formOverlay">
+	<p>{xen:phrase th_please_confirm_want_to_delete_bible_bible}:</p>
+	<strong><a href="{xen:adminlink 'bibles/edit', $bible}">{$bible.name}</a></strong>
+
+	<xen:submitunit save="{xen:phrase th_delete_bible_bible}" />
+
+	<input type="hidden" name="_xfConfirm" value="1" />
+</xen:form>]]></template>
+    <template title="th_bible_edit_bible"><![CDATA[<xen:title>{xen:if '{$bible.bible_id}', '{xen:phrase th_edit_bible_bible}: {$bible.title}', '{xen:phrase th_create_new_bible_bible}'}</xen:title>
+
+<xen:h1>{xen:if '{$bible.bible_id}', '{xen:phrase th_edit_bible_bible}: <em>{$bible.title}</em>', '{xen:phrase th_create_new_bible_bible}'}</xen:h1>
+
+<xen:if is="{$bible.bible_id}">
+	<xen:navigation>
+		<xen:breadcrumb href="{xen:adminlink 'bibles'}#{xen:helper listitemid, $bible.bible_id}">{$bible.name}</xen:breadcrumb>
+	</xen:navigation>
+</xen:if>
+
+<xen:form action="{xen:adminlink 'bibles/save', $bible}" class="AutoValidator" data-redirect="on">
+	<xen:textboxunit label="{xen:phrase th_name_bible}:" explain="{xen:phrase th_name_explain_bible}" name="name" value="{$bible.name}" data-liveTitleTemplate="{xen:if {$bible.bible_id},
+		'{xen:phrase th_edit_bible_bible}: <em>%s</em>',
+		'{xen:phrase th_create_new_bible_bible}: <em>%s</em>'}" />
+		
+	<xen:if is="!{$bible.bible_id}">
+		<xen:textboxunit label="{xen:phrase th_bible_id_bible}:" name="bible_id" />
+	</xen:if>
+
+	<xen:textboxunit label="{xen:phrase title}:" name="title" value="{$bible.title}" />
+
+	<xen:textboxunit name="description" value="{$template.template}" label="{xen:phrase description}:" hint="{xen:phrase you_may_use_html}" explain="{xen:phrase th_description_explain_bible}" rows="2" inputclass="Elastic" />
+			
+	<xen:textboxunit label="{xen:phrase th_copyright_bible}:" explain="{xen:phrase th_copyright_explain_bible}" name="copyright" value="{$bible.copyright}" />
+
+	<xen:textboxunit label="{xen:phrase th_abbreviation_bible}:" explain="{xen:phrase th_abbreviation_explain_bible}" name="abbreviation" value="{$bible.abbreviation}" />
+
+	<xen:textboxunit label="{xen:phrase th_language_bible}:" explain="{xen:phrase th_language_explain_bible}" name="language" value="{$bible.language}" />
+
+	<xen:textboxunit label="{xen:phrase th_note_bible}:" explain="{xen:phrase th_note_explain_bible}" name="note" value="{$bible.note}" />
+
+	<xen:submitunit>
+		<input type="submit" name="saveexit" value="{xen:phrase save_and_exit}" accesskey="e" class="button primary" id="saveExitButton" />
+		<input type="submit" name="reload" value="{xen:phrase save_changes}" accesskey="s" class="button" id="saveReloadButton" data-ajaxvalue="{xen:phrase save_all_changes}" />
+		<xen:if is="{$bible.bible_id}">
+			<input type="button" value="{xen:phrase th_delete_bible_bible}..." accesskey="d" class="button OverlayTrigger"
+				data-href="{xen:adminlink bibles/delete, $bible}" />
+		</xen:if>
+	</xen:submitunit>
+</xen:form>]]></template>
+    <template title="th_bible_import_bible"><![CDATA[<xen:title>{xen:phrase th_import_bible_bible}</xen:title>
+
+<xen:form action="{xen:adminlink bibles/import}" upload="true">
+
+	<xen:uploadunit label="{xen:phrase th_import_from_uploaded_zip_file_bible}:" name="upload" explain="{xen:phrase th_bibles_can_be_imported_from_tub_bible}" />
+
+	<xen:submitunit save="{xen:phrase th_import_bible_bible}" />
+
+	<input type="hidden" name="_xfConfirm" value="1" />
+	
+</xen:form>]]></template>
+    <template title="th_bible_list_bible"><![CDATA[<xen:title>{xen:phrase th_bibles_bible}</xen:title>
+
+<xen:h1>{xen:phrase th_bibles_bible}</xen:h1>
+
+<xen:topctrl>
+    <a href="{xen:adminlink 'bibles/add'}" class="button">+ {xen:phrase th_create_new_bible_bible}</a>
+    <a href="{xen:adminlink 'bibles/import'}" class="button">{xen:phrase th_import_bible_bible}</a>
+</xen:topctrl>
+
+<xen:require css="filter_list.css" />
+<xen:require js="js/xenforo/filter_list.js" />
+
+<xen:form action="{xen:adminlink 'bibles/toggle'}" class="section AutoValidator">
+
+    <xen:if is="{$bibles}">
+        <h2 class="subHeading">
+            <xen:include template="filter_list_controls" />
+            {xen:phrase th_bibles_bible}
+        </h2>
+
+        <ol class="FilterList">
+            <xen:foreach loop="$bibles" key="$bibleId" value="$bible">
+                <xen:listitem id="{$bibleId}"
+                    label="{$bible.name}"
+                    snippet="{$bible.copyright}"
+                    href="{xen:adminlink 'bibles/edit', $bible}"
+                    delete="{xen:adminlink 'bibles/delete', $bible}"
+                    deletehint="{xen:phrase delete}">
+                </xen:listitem>
+            </xen:foreach>
+        </ol>
+
+        <p class="sectionFooter">{xen:phrase showing_x_of_y_items, 'count=<span class="FilterListCount">{xen:count $bibles}</span>', 'total={xen:count $bibles}'}</p>
+
+    <xen:else />
+        <div class="noResults">{xen:phrase th_there_are_no_bibles_bible}</div>
+    </xen:if>
+
+</xen:form>]]></template>
+    <template title="th_book_delete_bible"><![CDATA[<xen:title>{xen:phrase th_confirm_deletion_of_book_bible}: {$book.url_portion}</xen:title>
+
+<xen:h1>{xen:phrase th_confirm_deletion_of_book_bible}</xen:h1>
+
+<xen:navigation>
+	<xen:breadcrumb href="{xen:adminlink 'bible-books/edit', $book}">{$book.url_portion}</xen:breadcrumb>
+</xen:navigation>
+
+<xen:require css="delete_confirmation.css" />
+
+<xen:form action="{xen:adminlink 'bible-books/delete', $book}" class="deleteConfirmForm formOverlay">
+	<p>{xen:phrase th_please_confirm_want_to_delete_book_bible}:</p>
+	<strong><a href="{xen:adminlink 'bible-books/edit', $book}">{$book.title}</a></strong>
+
+	<xen:submitunit save="{xen:phrase th_delete_book_bible}" />
+
+	<input type="hidden" name="_xfConfirm" value="1" />
+</xen:form>]]></template>
+    <template title="th_book_edit_bible"><![CDATA[<xen:title>{xen:if '{$book.book_id}', '{xen:phrase th_edit_book_bible}: {$book.title}', '{xen:phrase th_create_new_book_bible}'}</xen:title>
+
+<xen:h1>{xen:if '{$book.book_id}', '{xen:phrase th_edit_book_bible}: <em>{$book.title}</em>', '{xen:phrase th_create_new_book_bible}'}</xen:h1>
+
+<xen:if is="{$book.book_id}">
+	<xen:navigation>
+		<xen:breadcrumb href="{xen:adminlink 'bible-books'}#{xen:helper listitemid, $book.book_id}">{$book.title}</xen:breadcrumb>
+	</xen:navigation>
+</xen:if>
+
+<xen:form action="{xen:adminlink 'bible-books/save', $book}" class="AutoValidator" data-redirect="on">
+	<xen:textboxunit label="{xen:phrase title}:" name="title" value="{$book.title}" data-liveTitleTemplate="{xen:if {$book.book_id},
+		'{xen:phrase th_edit_book_bible}: <em>%s</em>',
+		'{xen:phrase th_create_new_book_bible}: <em>%s</em>'}" />
+
+	<xen:textboxunit label="{xen:phrase url_portion}:" explain="{xen:phrase th_url_portion_explain_bible}" name="url_portion" value="{$book.url_portion}" />
+
+	<xen:selectunit label="{xen:phrase th_section_bible}:" explain="{xen:phrase th_section_explain_bible}" name="section">
+		<xen:foreach loop="$sectionTitles" key="$section" value="$sectionTitle">
+			<xen:option value="{$section}" label="{$sectionTitle}" selected="{$book.section} == {$section}" />
+		</xen:foreach>
+	</xen:selectunit>
+
+	<xen:spinboxunit label="{xen:phrase display_order}:" name="priority" value="{$book.priority}" />
+
+	<xen:textboxunit label="{xen:phrase th_allowed_names_bible}:" explain="{xen:phrase th_book_names_explain_bible}" name="book_names" value="{$bookNames}" />
+
+	<xen:submitunit>
+		<input type="submit" name="saveexit" value="{xen:phrase save_and_exit}" accesskey="e" class="button primary" id="saveExitButton" />
+		<input type="submit" name="reload" value="{xen:phrase save_changes}" accesskey="s" class="button" id="saveReloadButton" data-ajaxvalue="{xen:phrase save_all_changes}" />
+		<xen:if is="{$book.book_id}">
+			<input type="button" value="{xen:phrase th_delete_book_bible}..." accesskey="d" class="button OverlayTrigger"
+				data-href="{xen:adminlink bible-books/delete, $book}" />
+		</xen:if>
+	</xen:submitunit>
+</xen:form>]]></template>
+    <template title="th_book_list_bible"><![CDATA[<xen:title>{xen:phrase th_books_bible}</xen:title>
+
+<xen:h1>{xen:phrase th_books_bible}</xen:h1>
+
+<xen:topctrl>
+    <a href="{xen:adminlink 'bible-books/add'}" class="button">+ {xen:phrase th_create_new_book_bible}</a>
+</xen:topctrl>
+
+<xen:require css="filter_list.css" />
+<xen:require js="js/xenforo/filter_list.js" />
+
+<xen:form action="{xen:adminlink 'bible-books/toggle'}" class="section AutoValidator">
+
+    <xen:if is="{$books}">
+        <h2 class="subHeading">
+            <xen:include template="filter_list_controls" />
+            {xen:phrase th_books_bible}
+        </h2>
+
+        <ol class="FilterList">
+            <xen:foreach loop="$books" key="$bookId" value="$book">
+                <xen:listitem id="{$bookId}"
+                    label="{$book.title}"
+                    snippet="{$sectionTitles.{$book.section}}"
+                    href="{xen:adminlink 'bible-books/edit', $book}"
+                    delete="{xen:adminlink 'bible-books/delete', $book}"
+                    deletehint="{xen:phrase delete}">
+                </xen:listitem>
+            </xen:foreach>
+        </ol>
+
+        <p class="sectionFooter">{xen:phrase showing_x_of_y_items, 'count=<span class="FilterListCount">{xen:count $books}</span>', 'total={xen:count $books}'}</p>
+
+    <xen:else />
+        <div class="noResults">{xen:phrase th_there_are_no_books_bible}</div>
+    </xen:if>
+
+</xen:form>]]></template>
+    <template title="th_tools_rebuild_bible"><![CDATA[<xen:form action="{xen:adminlink 'tools/trigger-deferred'}">
+	<h2 class="subHeading">{xen:phrase th_rebuild_post_verse_cache_bible}</h2>
+	<xen:spinboxunit name="options[batch]" value="200" step="10" min="1" label="{xen:phrase items_to_process_per_page}:" />
+	
+	<xen:submitunit save="{xen:phrase rebuild_now}" />
+	<input type="hidden" name="cache" value="ThemeHouse_Bible_Deferred_PostVerse" />
+</xen:form>]]></template>
+  </admin_templates>
+  <admin_template_modifications>
+    <modification template="tools_rebuild" modification_key="th_toolsRebuild_bible" description="Add 'Post Verse' rebuilder." execution_order="10" enabled="1" action="preg_replace">
+      <find><![CDATA[#$#]]></find>
+      <replace><![CDATA[<xen:include template="th_tools_rebuild_bible" />]]></replace>
+    </modification>
+  </admin_template_modifications>
+  <code_events/>
+  <code_event_listeners>
+    <listener event_id="controller_pre_dispatch" execute_order="10" callback_class="ThemeHouse_Listener_ControllerPreDispatch" callback_method="controllerPreDispatch" active="1" hint="" description=""/>
+    <listener event_id="file_health_check" execute_order="10" callback_class="ThemeHouse_Bible_Listener_FileHealthCheck" callback_method="fileHealthCheck" active="1" hint="" description=""/>
+    <listener event_id="init_dependencies" execute_order="10" callback_class="ThemeHouse_Listener_InitDependencies" callback_method="initDependencies" active="1" hint="" description=""/>
+    <listener event_id="load_class" execute_order="10" callback_class="ThemeHouse_Bible_Listener_LoadClass" callback_method="loadClassBbCode" active="0" hint="XenForo_BbCode_Formatter_BbCode_AutoLink" description="XenForo_BbCode_Formatter_BbCode_AutoLink (For XenForo 1.2 and above)" compatibility_switch="1"/>
+    <listener event_id="load_class" execute_order="10" callback_class="ThemeHouse_Bible_Listener_LoadClass" callback_method="loadClassBbCode" active="0" hint="XenForo_BbCode_Formatter_Base" description="XenForo_BbCode_Formatter_Base (For XenForo 1.2 and above)" compatibility_switch="1"/>
+    <listener event_id="load_class" execute_order="10" callback_class="ThemeHouse_Bible_Listener_LoadClass" callback_method="loadClassDataWriter" active="0" hint="XenForo_DataWriter_DiscussionMessage_Post" description="XenForo_DataWriter_DiscussionMessage_Post (For XenForo 1.2 and above)" compatibility_switch="1"/>
+    <listener event_id="load_class_bb_code" execute_order="10" callback_class="ThemeHouse_Bible_Listener_LoadClass" callback_method="loadClassBbCode" active="1" hint="" description="(For XenForo 1.1 and below)" compatibility_switch="1"/>
+    <listener event_id="load_class_datawriter" execute_order="10" callback_class="ThemeHouse_Bible_Listener_LoadClass" callback_method="loadClassDataWriter" active="1" hint="" description="(For XenForo 1.1 and below)" compatibility_switch="1"/>
+    <listener event_id="navigation_tabs" execute_order="10" callback_class="ThemeHouse_Bible_Listener_NavigationTabs" callback_method="navigationTabs" active="1" hint="" description=""/>
+  </code_event_listeners>
+  <cron/>
+  <email_templates/>
+  <email_template_modifications/>
+  <optiongroups>
+    <group group_id="th_bible" display_order="2000" debug_only="0"/>
+    <option option_id="th_bible_bbCodeBibles" edit_format="callback" data_type="array" can_backup="1">
+      <default_value/>
+      <edit_format_params>ThemeHouse_Bible_Option_BibleChooser::renderCheckbox</edit_format_params>
+      <sub_options>*</sub_options>
+      <relation group_id="th_bible" display_order="100"/>
+    </option>
+    <option option_id="th_bible_defaultBible" edit_format="callback" data_type="string" can_backup="1">
+      <default_value/>
+      <edit_format_params>ThemeHouse_Bible_Option_BibleChooser::renderSelect</edit_format_params>
+      <sub_options/>
+      <relation group_id="th_bible" display_order="1"/>
+    </option>
+    <option option_id="th_bible_tooltipVerseLimit" edit_format="spinbox" data_type="integer" can_backup="1">
+      <default_value>3</default_value>
+      <edit_format_params/>
+      <sub_options/>
+      <relation group_id="th_bible" display_order="200"/>
+    </option>
+  </optiongroups>
+  <permissions>
+    <permission_groups/>
+    <permissions/>
+    <interface_groups/>
+  </permissions>
+  <phrases>
+    <phrase title="admin_navigation_bibleBooks" version_id="1433786497" version_string="1.1.1"><![CDATA[List Books]]></phrase>
+    <phrase title="admin_navigation_bibles" version_id="1427545904" version_string="1.0.0"><![CDATA[Bibles]]></phrase>
+    <phrase title="admin_navigation_listBibles" version_id="1427545904" version_string="1.0.0"><![CDATA[List Bibles]]></phrase>
+    <phrase title="admin_permission_bible" version_id="1427545904" version_string="1.0.0"><![CDATA[Manage Bibles]]></phrase>
+    <phrase title="bible_verse" version_id="1433786497" version_string="1.1.1"><![CDATA[Bible Verse]]></phrase>
+    <phrase title="custom_bb_code_versenum_desc" version_id="1433770152" version_string="1.1.0"><![CDATA[Formats verse numbers for Bible verses.]]></phrase>
+    <phrase title="custom_bb_code_versenum_title" global_cache="1" version_id="1433770152" version_string="1.1.0"><![CDATA[Verse Number]]></phrase>
+    <phrase title="custom_bb_code_verse_desc" version_id="1427540937" version_string="1.0.0"><![CDATA[Quote a bible verse.]]></phrase>
+    <phrase title="custom_bb_code_verse_title" global_cache="1" version_id="1427540937" version_string="1.0.0"><![CDATA[Verse]]></phrase>
+    <phrase title="option_group_th_bible" version_id="1427545904" version_string="1.0.0"><![CDATA[Bible by ThemeHouse]]></phrase>
+    <phrase title="option_group_th_bible_description" version_id="1427545904" version_string="1.0.0"><![CDATA[Options for the Bible by ThemeHouse add-on.]]></phrase>
+    <phrase title="option_th_bible_bbCodeBibles" version_id="1433500490" version_string="1.0.0"><![CDATA[Bibles in BB Codes]]></phrase>
+    <phrase title="option_th_bible_bbCodeBibles_explain" version_id="1433500490" version_string="1.0.0"><![CDATA[Translations that can be linked to from BB Codes.]]></phrase>
+    <phrase title="option_th_bible_defaultBible" version_id="1427545904" version_string="1.0.0"><![CDATA[Default Bible]]></phrase>
+    <phrase title="option_th_bible_defaultBible_explain" version_id="1433500490" version_string="1.0.0"><![CDATA[Bible translation to use if no translation is specified.]]></phrase>
+    <phrase title="option_th_bible_tooltipVerseLimit" version_id="1433786497" version_string="1.1.1"><![CDATA[Tooltip Verse Limit]]></phrase>
+    <phrase title="option_th_bible_tooltipVerseLimit_explain" version_id="1433786497" version_string="1.1.1"><![CDATA[This is the maximum number of verses that can be displayed in a tooltip. If set to zero, tooltips will never be displayed.]]></phrase>
+    <phrase title="th_abbreviation_bible" version_id="1427545904" version_string="1.0.0"><![CDATA[Abbreviation]]></phrase>
+    <phrase title="th_abbreviation_explain_bible" version_id="1427545904" version_string="1.0.0"><![CDATA[]]></phrase>
+    <phrase title="th_allowed_names_bible" version_id="1433786497" version_string="1.1.1"><![CDATA[Allowed Names]]></phrase>
+    <phrase title="th_bibles_bible" version_id="1427545904" version_string="1.0.0"><![CDATA[Bibles]]></phrase>
+    <phrase title="th_bibles_can_be_imported_from_tub_bible" version_id="1433164541" version_string="1.0.0"><![CDATA[Bibles can be downloaded for free from <a href="https://unbound.biola.edu/index.cfm?method=downloads.showDownloadMain" target="_blank">The Unbound Bible</a>.]]></phrase>
+    <phrase title="th_bible_bible" global_cache="1" version_id="1427545904" version_string="1.0.0"><![CDATA[Bible]]></phrase>
+    <phrase title="th_bible_id_bible" version_id="1433500490" version_string="1.0.0"><![CDATA[Bible ID]]></phrase>
+    <phrase title="th_bible_verses_bible" version_id="1427545904" version_string="1.0.0"><![CDATA[Bible Verses]]></phrase>
+    <phrase title="th_bible_verse_bible" version_id="1427545904" version_string="1.0.0"><![CDATA[Bible Verse]]></phrase>
+    <phrase title="th_books_bible" version_id="1433500490" version_string="1.0.0"><![CDATA[Books]]></phrase>
+    <phrase title="th_book_names_explain_bible" version_id="1433786497" version_string="1.1.1"><![CDATA[These are the names that can be used in messages to refer to this book, separated by commas. All names are case insensitive.]]></phrase>
+    <phrase title="th_chapter_x_bible" version_id="1427545904" version_string="1.0.0"><![CDATA[Chapter {chapter}]]></phrase>
+    <phrase title="th_chapter_x_of_y_bible" version_id="1433500490" version_string="1.0.0"><![CDATA[Chapter {current} of {total}]]></phrase>
+    <phrase title="th_confirm_deletion_of_bible_bible" version_id="1427545904" version_string="1.0.0"><![CDATA[Confirm deletion of Bible]]></phrase>
+    <phrase title="th_confirm_deletion_of_book_bible" version_id="1433786497" version_string="1.1.1"><![CDATA[Confirm Deletion of Book]]></phrase>
+    <phrase title="th_copyright_bible" version_id="1427545904" version_string="1.0.0"><![CDATA[Copyright]]></phrase>
+    <phrase title="th_copyright_explain_bible" version_id="1427545904" version_string="1.0.0"><![CDATA[]]></phrase>
+    <phrase title="th_create_new_bible_bible" version_id="1427545904" version_string="1.0.0"><![CDATA[Create New Bible]]></phrase>
+    <phrase title="th_create_new_book_bible" version_id="1433786497" version_string="1.1.1"><![CDATA[Create New Book]]></phrase>
+    <phrase title="th_delete_bible_bible" version_id="1427545904" version_string="1.0.0"><![CDATA[Delete Bible]]></phrase>
+    <phrase title="th_delete_book_bible" version_id="1433786497" version_string="1.1.1"><![CDATA[Delete Book]]></phrase>
+    <phrase title="th_description_explain_bible" version_id="1427545904" version_string="1.0.0"><![CDATA[]]></phrase>
+    <phrase title="th_deuterocanon_apocrypha_bible" version_id="1433500490" version_string="1.0.0"><![CDATA[Deuterocanon/Apocrypha]]></phrase>
+    <phrase title="th_edit_bible_bible" version_id="1427545904" version_string="1.0.0"><![CDATA[Edit Bible]]></phrase>
+    <phrase title="th_edit_book_bible" version_id="1433786497" version_string="1.1.1"><![CDATA[Edit Book]]></phrase>
+    <phrase title="th_import_bible_bible" version_id="1427545904" version_string="1.0.0"><![CDATA[Import Bible]]></phrase>
+    <phrase title="th_import_from_uploaded_zip_file_bible" version_id="1427545904" version_string="1.0.0"><![CDATA[Import from uploaded zip file]]></phrase>
+    <phrase title="th_language_bible" version_id="1427545904" version_string="1.0.0"><![CDATA[Language]]></phrase>
+    <phrase title="th_language_explain_bible" version_id="1427545904" version_string="1.0.0"><![CDATA[]]></phrase>
+    <phrase title="th_name_bible" version_id="1427545904" version_string="1.0.0"><![CDATA[Name]]></phrase>
+    <phrase title="th_name_explain_bible" version_id="1427545904" version_string="1.0.0"><![CDATA[]]></phrase>
+    <phrase title="th_new_testament_bible" version_id="1433500490" version_string="1.0.0"><![CDATA[New Testament]]></phrase>
+    <phrase title="th_note_bible" version_id="1427545904" version_string="1.0.0"><![CDATA[Note]]></phrase>
+    <phrase title="th_note_explain_bible" version_id="1427545904" version_string="1.0.0"><![CDATA[]]></phrase>
+    <phrase title="th_old_testament_bible" version_id="1433500490" version_string="1.0.0"><![CDATA[Old Testament]]></phrase>
+    <phrase title="th_please_confirm_want_to_delete_bible_bible" version_id="1427545904" version_string="1.0.0"><![CDATA[Please confirm you want to delete the Bible]]></phrase>
+    <phrase title="th_please_confirm_want_to_delete_book_bible" version_id="1433786497" version_string="1.1.1"><![CDATA[Plesae confirm that you want to delete the book]]></phrase>
+    <phrase title="th_please_enter_at_least_one_book_name_bible" version_id="1433786497" version_string="1.1.1"><![CDATA[Please enter at least one book name.]]></phrase>
+    <phrase title="th_rebuild_post_verse_cache_bible" version_id="1433786497" version_string="1.1.1"><![CDATA[Rebuild Post Verse Cache]]></phrase>
+    <phrase title="th_related_posts_bible" version_id="1433786497" version_string="1.1.1"><![CDATA[Related Posts]]></phrase>
+    <phrase title="th_requested_bible_translation_not_found_bible" version_id="1433786497" version_string="1.1.1"><![CDATA[The requested Bible translation could not be found.]]></phrase>
+    <phrase title="th_search_bible_verses_bible" version_id="1427545904" version_string="1.0.0"><![CDATA[Search Bible Verses]]></phrase>
+    <phrase title="th_section_bible" version_id="1433786497" version_string="1.1.1"><![CDATA[Section]]></phrase>
+    <phrase title="th_section_explain_bible" version_id="1433786497" version_string="1.1.1"><![CDATA[]]></phrase>
+    <phrase title="th_there_are_no_bibles_bible" version_id="1427545904" version_string="1.0.0"><![CDATA[There are no Bibles.]]></phrase>
+    <phrase title="th_there_are_no_books_bible" version_id="1433786497" version_string="1.1.1"><![CDATA[There are no books.]]></phrase>
+    <phrase title="th_translations_bible" version_id="1433500490" version_string="1.0.0"><![CDATA[Translations]]></phrase>
+    <phrase title="th_url_portion_explain_bible" version_id="1433786497" version_string="1.1.1"><![CDATA[Use a-z, 0-9, _, and - characters only. Note that once specified, changing this value will cause URLs to be broken.]]></phrase>
+    <phrase title="th_verse_x_of_y_bible" version_id="1433500490" version_string="1.0.0"><![CDATA[Verse {current} of {total}]]></phrase>
+    <phrase title="th_view_in_context_bible" version_id="1433500490" version_string="1.0.0"><![CDATA[View in Context]]></phrase>
+  </phrases>
+  <route_prefixes>
+    <route_type type="admin">
+      <prefix original_prefix="bible-books" class="ThemeHouse_Bible_Route_PrefixAdmin_BibleBooks" build_link="data_only"/>
+      <prefix original_prefix="bibles" class="ThemeHouse_Bible_Route_PrefixAdmin_Bibles" build_link="data_only"/>
+    </route_type>
+    <route_type type="public">
+      <prefix original_prefix="bible" class="ThemeHouse_Bible_Route_Prefix_Bible" build_link="all"/>
+    </route_type>
+  </route_prefixes>
+  <style_properties/>
+  <templates>
+    <template title="th_bb_code_verse_bible" version_id="1433770152" version_string="1.1.0"><![CDATA[<xen:require css="bb_code.css" />
+<xen:require css="th_bible.css" />
+
+<div class="bbCodeBlock bbCodeQuote bbCodeBibleVerse">
+	<aside>
+		<xen:if is="{$verse} || {$version}">
+			<div class="attribution type">{xen:if $verse, '{xen:if $link, '<a href="{$link}">'}{$verse}{xen:if $link, '</a>'}{xen:if $version, ' ('}'}{xen:if {$bibleTitle}, {$bibleTitle}, {$version}}{xen:if '{$verse} && {$version}', ')'}:
+			</div>
+		</xen:if>
+		<blockquote class="quoteContainer"><div class="quote">{xen:raw $content}</div><div class="quoteExpand">{xen:phrase click_to_expand}</div></blockquote>
+	</aside>
+</div>]]></template>
+    <template title="th_bible.css" version_id="1433786497" version_string="1.1.1"><![CDATA[.bible sup.versenum, .bbCodeBibleVerse sup.versenum
+{
+	vertical-align: super;
+	font-size: inherit;
+	font-size: 70%;
+}
+
+.bible sup.chapternum
+{
+	font-size: 24px;
+	font-weight: bold;
+	position: relative;
+	line-height: .8em;
+	bottom: -0.1em;
+	left: 0;
+	text-indent: 0;
+}
+
+.bible p
+{
+	padding-bottom: 10px;
+}
+
+.bible span a
+{
+	text-decoration: none;
+	color: inherit;
+}
+
+.bible span a:hover
+{
+	text-decoration: none;
+	color: inherit;
+	background-color: {xen:property inlineMod};
+}
+
+.verseTooltip.bible .messageText
+{
+	font-size: 10pt;
+}
+
+.verseTooltip.bible > span.muted
+{
+	font-size: 8pt;
+	display: block;
+	margin-top: 10px;
+}
+
+/* ***************************** */
+
+#VerseTooltip
+{
+	display: none;
+}
+
+.xenVerseTooltip
+{
+	{xen:property previewTooltip}
+	
+	display: none;	
+	z-index: 15000;
+	cursor: default;
+	
+	border-color: {xen:helper rgba, {xen:property previewTooltip.border-color}, 0.5};
+}
+
+	.xenVerseTooltip .arrow
+	{
+		{xen:property previewTooltipArrowOuter}
+		
+		_display: none;
+	}
+	
+		.xenVerseTooltip .arrow span
+		{
+			{xen:property previewTooltipArrowInner}
+		}
+
+	.xenVerseTooltip .section,
+	.xenVerseTooltip .sectionMain,
+	.xenVerseTooltip .primaryContent,
+	.xenVerseTooltip .secondaryContent
+	{
+		margin: 0;
+	}
+	
+		.xenVerseTooltip .verseContent
+		{
+			overflow: hidden; zoom: 1;
+			min-height: 1em;
+		}]]></template>
+    <template title="th_bible_book_menu_bible" version_id="1433500490" version_string="1.0.0"><![CDATA[<div class="primaryContent menuHeader"><h3>{xen:phrase th_books_bible}</h3></div>
+<div class="secondaryContent blockLinksList">
+	<xen:foreach loop="$books" key="$bookId" value="$book">
+		<a href="{xen:link bible, {xen:array 'url_portion={$book.url_portion}'}, 'bible_id={$bibleId}'}" class="{xen:if '{$selectedBookId} == {$bookId}', selected}">{$book.title}</a>
+	</xen:foreach>
+</div>]]></template>
+    <template title="th_bible_menu_bible" version_id="1433500490" version_string="1.0.0"><![CDATA[<div class="primaryContent menuHeader"><h3>{xen:phrase th_translations_bible}</h3></div>
+<div class="secondaryContent blockLinksList">
+	<xen:foreach loop="$bibles" key="$bibleId" value="$bible">
+		<a href="{xen:link bible, {xen:array 'url_portion={$book.url_portion}', 'chapter={$chapter}'}, 'bible_id={$bibleId}'}" class="{xen:if '{$selectedBibleId} == {$bibleId}', selected}">{$bible.title}</a>
+	</xen:foreach>
+</div>]]></template>
+    <template title="th_bible_verse_tooltip_bible" version_id="1433786497" version_string="1.1.1"><![CDATA[<xen:require css="th_bible.css" />
+
+<div class="bible verseTooltip">
+	<div class="messageText">
+		<blockquote class="verseText">{xen:raw $verseParsed}</blockquote>
+		<xen:if is="{$truncated}">
+			<span class="muted">...</span>
+		</xen:if>
+	</div>
+
+	<span class="muted">{$bible.title}</span>
+</div>]]></template>
+    <template title="th_bible_view_bible" version_id="1433786497" version_string="1.1.1"><![CDATA[<xen:title>{$title}</xen:title>
+
+<xen:description>{$bible.title}</xen:description>
+
+<xen:container var="$head.canonical"><link rel="canonical" href="{xen:link 'canonical:bible', {$navParams}, 'bible_id={$bible.bible_id}'}" /></xen:container>
+<xen:if is="{$xenOptions.boardDescription}"><xen:container var="$head.description">
+	<meta name="description" content="{$title} - {$bible.title}" /></xen:container></xen:if>
+<xen:container var="$head.openGraph">
+	<xen:include template="open_graph_meta">
+		<xen:set var="$url">{xen:link 'canonical:bible', {$navParams}, 'bible_id={$bible.bible_id}'}</xen:set>
+		<xen:set var="$title">{$xenOptions.boardTitle}</xen:set>
+		<xen:set var="$description">{$title} - {$bible.title}</xen:set>
+		<xen:set var="$ogType">website</xen:set>
+	</xen:include></xen:container>
+	
+<xen:navigation>
+	<xen:breadcrumb href="{xen:link 'full:bible', '', 'bible_id={$bible.bible_id}'}">{$bible.title}</xen:breadcrumb>
+	<xen:breadcrumb href="{xen:link 'full:bible', {xen:array 'url_portion={$firstVerse.section_url_portion}'}, 'bible_id={$bible.bible_id}'}">{$firstVerse.section_title}</xen:breadcrumb>
+	<xen:breadcrumb href="{xen:link 'full:bible', {xen:array 'url_portion={$firstVerse.url_portion}'}, 'bible_id={$bible.bible_id}'}">{$firstVerse.book_title}</xen:breadcrumb>
+	<xen:breadcrumb href="{xen:link 'full:bible', {xen:array 'url_portion={$firstVerse.url_portion}', 'chapter={$firstVerse.chapter}'}, 'bible_id={$bible.bible_id}'}">{xen:phrase th_chapter_x_bible, 'chapter={$firstVerse.chapter}'}</xen:breadcrumb>
+</xen:navigation>
+
+<xen:require css="th_bible.css" />
+
+<div class="pageNavLinkGroup">
+	<div class="linkGroup">
+		<div class="Popup filterLink JsOnly">
+			<a rel="Menu">{xen:phrase th_books_bible}</a>
+			<div class="Menu bibleBookMenu" id="BibleBookMenu"
+				data-contentsrc="{xen:link bible/books, '', 'book_id={$firstVerse.book_id}', 'bible_id={$bible.bible_id}'}"
+				data-contentdest="#BibleBookMenu > .primaryContent"
+				data-insertfn="replaceAll"
+			>
+				<div class="primaryContent">{xen:phrase loading}...</div>
+			</div>
+		</div>
+		<div class="Popup filterLink JsOnly">
+			<a rel="Menu">{xen:phrase th_translations_bible}</a>
+			<div class="Menu bibleBookMenu" id="BibleMenu"
+				data-contentsrc="{xen:link bible/translations, '', 'book_id={$firstVerse.book_id}', 'chapter={$firstVerse.chapter}', 'bible_id={$bible.bible_id}'}"
+				data-contentdest="#BibleMenu > .primaryContent"
+				data-insertfn="replaceAll"
+			>
+				<div class="primaryContent">{xen:phrase loading}...</div>
+			</div>
+		</div>
+	</div>
+
+	<xen:if is="{$verseCount}">
+		<xen:pagenav link="{$firstVerse.url_portion}" linkparams="{xen:array 'bible_id={$bible.bible_id}'}" linkdata="{$firstVerse.chapter}" page="{$firstVerse.verse}" perpage="1" total="{$verseCount}" options="{xen:array 'template=th_verse_nav_bible'}" />
+	<xen:else />
+		<xen:pagenav link="{$firstVerse.url_portion}" linkparams="{xen:array 'bible_id={$bible.bible_id}'}" page="{$firstVerse.chapter}" perpage="1" total="{$chapterCount}" options="{xen:array 'template=th_chapter_nav_bible'}" />
+	</xen:if>
+</div>
+
+<div class="primaryContent messageText bible">
+	<p>
+	<xen:foreach loop="$verses" key="$verseId" value="$verse">
+		<xen:if is="{$verse.pe} || {$verse.samekh}">
+			</p>
+			<p>
+		</xen:if>
+		<span id="verse-{$verseId}" class="{$verse.verse}">
+			<xen:if is="{xen:count $verses} > 1"><a href="{xen:link 'full:bible', {xen:array 'url_portion={$verse.url_portion}', 'chapter={$verse.chapter}', 'verse={$verse.verse}'}, 'bible_id={$bible.bible_id}'}"></xen:if>
+			<xen:if is="{$verse.verse} > 1"><sup class="versenum">{$verse.verse}</sup><xen:else /><sup class="chapternum">{$verse.chapter}</sup></xen:if>
+			{$verse.text}
+			<xen:if is="{xen:count $verses} > 1"></a></xen:if>
+		</span>
+		<xen:if is="{$verse.paragraph_break}">
+			</p>
+			<p>
+		</xen:if>
+	</xen:foreach>
+	</p>
+</div>
+
+<div class="pageNavLinkGroup">
+	<xen:pagenav link="{$firstVerse.url_portion}" linkparams="{xen:array 'bible_id={$bible.bible_id}'}" page="{$firstVerse.chapter}" perpage="1" total="{$chapterCount}" options="{xen:array 'template=th_chapter_nav_bible'}" />
+	<xen:if is="{$verseCount}">
+		<xen:pagenav link="{$firstVerse.url_portion}" linkparams="{xen:array 'bible_id={$bible.bible_id}'}" linkdata="{$firstVerse.chapter}" page="{$firstVerse.verse}" perpage="1" total="{$verseCount}" options="{xen:array 'template=th_verse_nav_bible'}" />
+	</xen:if>
+</div>
+
+<xen:sidebar>
+	<xen:if is="{$posts}">
+		<div class="section profilePostList">
+			<div class="secondaryContent">
+				<h3><a href="{xen:link search/results, '', '_params={xen:array 'q="{$title}"', 't=post'}'}">{xen:phrase th_related_posts_bible}</a></h3>
+				<xen:include template="th_sidebar_post_list_bible" />
+			</div>
+		</div>
+	</xen:if>
+	
+	<xen:include template="sidebar_share_page">
+		<xen:set var="$url">{xen:link 'canonical:bible', {$navParams}, 'bible_id={$bible.bible_id}'}</xen:set>
+	</xen:include>
+</xen:sidebar>]]></template>
+    <template title="th_chapter_nav_bible" version_id="1433500490" version_string="1.0.0"><![CDATA[<xen:edithint template="page_nav.css" />
+
+<xen:if is="{$pageTotal} > 1">
+<div class="PageNav"
+	data-page="{$currentPage}"
+	data-range="{$range}"
+	data-start="{$startPage}"
+	data-end="{$endPage}"
+	data-last="{$pageTotal}"
+	data-sentinel="{$pageNumberSentinel}"
+	data-baseurl="{xen:link bible, {xen:array 'url_portion={$linkType}', 'chapter={$pageNumberSentinel}'}, '_params={$linkParams}'}">
+	
+	<span class="pageNavHeader">{xen:phrase th_chapter_x_of_y_bible, 'current={$currentPage}', 'total={$pageTotal}'}</span>
+	
+	<nav>
+		<xen:if is="{$prevPage}">
+			<a href="{xen:link bible, {xen:array 'url_portion={$linkType}', 'chapter={xen:if "{$prevPage} > 1", $prevPage}'}, '_params={$linkParams}'}" class="text">&lt; {xen:phrase prev}</a>
+			<xen:container var="$head.prev"><link rel="prev" href="{xen:link bible, {xen:array 'url_portion={$linkType}', 'chapter={xen:if "{$prevPage} > 1", $prevPage}'}, '_params={$linkParams}'}" /></xen:container>
+		</xen:if>
+		
+		<a href="{xen:link bible, {xen:array 'url_portion={$linkType}'}, '_params={$linkParams}'}" class="{xen:if '1 == {$currentPage}', 'currentPage '}" rel="start">1</a>
+		
+		<xen:if is="{$pageTotal} > {$scrollThreshold}">
+			<a class="PageNavPrev {xen:if '{$startPage} <= 2', hidden}">&larr;</a> <span class="scrollable"><span class="items">
+		</xen:if>
+		
+		<xen:foreach loop="{$pages}" value="{$pageNumber}">
+			<a href="{xen:link bible, {xen:array 'url_portion={$linkType}', 'chapter={$pageNumber}'}, '_params={$linkParams}'}" class="{xen:if '{$pageNumber} == {$currentPage}', 'currentPage'}">{$pageNumber}</a>
+		</xen:foreach>
+		
+		<xen:if is="{$pageTotal} > {$scrollThreshold}">
+			</span></span> <a class="PageNavNext {xen:if '{$endPage} + 1 >= {$pageTotal}', hidden}">&rarr;</a>
+		</xen:if>
+		
+		<a href="{xen:link bible, {xen:array 'url_portion={$linkType}', 'chapter={$pageTotal}'}, '_params={$linkParams}'}" class="{xen:if '{$pageTotal} == {$currentPage}', 'currentPage'}">{$pageTotal}</a>
+		
+		<xen:if is="{$nextPage}">
+			<a href="{xen:link bible, {xen:array 'url_portion={$linkType}', 'chapter={$nextPage}'}, '_params={$linkParams}'}" class="text">{xen:phrase next} &gt;</a>
+			<xen:container var="$head.next"><link rel="next" href="{xen:link bible, {xen:array 'url_portion={$linkType}', 'chapter={$nextPage}'}, '_params={$linkParams}'}" /></xen:container>
+		</xen:if>
+	</nav>
+</div>
+</xen:if>]]></template>
+    <template title="th_navigation_tabs_bible" version_id="1427545904" version_string="1.0.0"><![CDATA[<ul class="secondaryContent blockLinksList">
+	<xen:if is="{$canSearch}"><li><a href="{xen:link search, '', 'type=bible_verse'}">{xen:phrase th_search_bible_verses_bible}</a></li></xen:if>
+</ul>]]></template>
+    <template title="th_post_list_item_simple_bible" version_id="1433786497" version_string="1.1.1"><![CDATA[<xen:require css="th_post_list_simple_bible.css" />
+<xen:require css="bb_code.css" />
+
+<li id="post-{$post.post_id}" class="postListItem {xen:if $post.isDeleted, 'deleted'} {xen:if '{$post.is_staff}', 'staff'} {xen:if $post.isIgnored, ignored}" data-author="{$post.username}">
+
+	<xen:avatar user="$post" size="s" img="true" />
+	
+	<div class="messageInfo">
+		
+		<div class="messageContent">
+			<span class="poster">
+				<xen:username user="$post" rich="true" />
+				<xen:if is="{$post.user_id} != {$post.profile_user_id} AND {$post.profileUser}">
+					<span class="muted">{xen:if $pageIsRtl, '&#9668;', '&#9658;'}</span> <xen:username user="$profilePost.profileUser" rich="true" />
+				</xen:if>
+			</span>
+			<article><blockquote class="ugc baseHtml{xen:if $post.isIgnored, ' ignored'}">{xen:helper bodyText, {xen:helper snippet, $post.messageParsed, 150}}</blockquote></article>
+		</div>
+
+		<div class="messageMeta">
+			<div class="privateControls">
+				<a href="{xen:link 'posts', $post}" title="{xen:phrase permalink}" class="item muted"><xen:datetime time="$post.post_date" /></a>
+			</div>
+
+			<xen:comment><div class="publicControls">
+				<a href="{xen:link 'posts', $post}" class="item Tooltip OverlayTrigger" title="{xen:phrase interact}" data-tipclass="flipped" data-offsetX="7" data-offsetY="-7">&#8226;&#8226;&#8226;</a>
+			</div></xen:comment>
+		</div>
+
+	</div>
+</li>]]></template>
+    <template title="th_post_list_simple_bible.css" version_id="1433786497" version_string="1.1.1"><![CDATA[.postListItem
+{
+	overflow: hidden; zoom: 1;
+
+	margin: 5px 0;
+	padding-top: 5px;
+	border-top: 1px solid {xen:property primaryLighterStill};
+}
+
+.postListItem:first-child
+{
+	border-top: none;
+	padding-top: 0;
+}
+
+.postListItem .avatar
+{
+	float: left;
+	font-size: 0;
+}
+
+	.postListItem .avatar img
+	{
+		width: 24px;
+		height: 24px;
+	}
+
+.postListItem .messageInfo
+{
+	margin-left: 34px;
+}
+
+
+.postListItem .messageContent article,
+.postListItem .messageContent blockquote
+{
+	display: inline;
+}
+
+.postListItem .poster
+{
+	font-weight: bold;
+}
+
+.postListItem .messageMeta
+{
+	overflow: hidden; zoom: 1;
+	font-size: 11px;
+	line-height: 14px;
+	padding-top: 4px;
+}
+
+.postListItem .privateControls
+{
+	float: left;
+}
+
+	.postListItem .privateControls .item
+	{
+		float: left;
+		margin-right: 10px;
+	}
+
+.postListItem .publicControls
+{
+	float: right;
+}
+
+	.postListItem .publicControls .item
+	{
+		float: left;
+		margin-left: 10px;
+	}
+	
+.sidebar .statusPoster textarea
+{
+	width: 100%;
+	margin: 0;
+	box-sizing: border-box;
+	resize: vertical;
+	overflow: hidden;
+}
+
+.sidebar .statusPoster .submitUnit
+{
+	margin-top: 5px;
+	text-align: right;
+}]]></template>
+    <template title="th_search_form_bible_verse_bible" version_id="1433500490" version_string="1.0.0"><![CDATA[<xen:title>{xen:phrase th_search_bible_verses_bible}</xen:title>
+
+<xen:navigation>
+	<xen:breadcrumb href="{xen:link full:search}">{xen:phrase search}</xen:breadcrumb>
+</xen:navigation>
+
+<form action="{xen:link 'search/search'}" method="post" class="xenForm AutoValidator"
+	data-optInOut="optIn"
+	data-redirect="true">
+
+	<xen:include template="search_form_tabs" />
+	
+	<dl class="ctrlUnit">
+		<dt><label for="ctrl_keywords">{xen:phrase keywords}:</label></dt>
+		<dd><input type="search" name="keywords" value="{$search.keywords}" results="0" class="textCtrl" id="ctrl_keywords" autofocus="true" /></dd>
+	</dl>
+
+	<xen:if is="{$supportsRelevance}">
+		<input type="hidden" name="order" value="relevance" />
+	<xen:else />
+		<input type="hidden" name="order" value="date" />
+	</xen:if>
+
+	<dl class="ctrlUnit submitUnit">
+		<dt></dt>
+		<dd><input type="submit" value="{xen:phrase search}" accesskey="s" class="button primary" /></dd>
+	</dl>
+
+	<input type="hidden" name="type" value="bible_verse" />
+	<input type="hidden" name="_xfToken" value="{$visitor.csrf_token_page}" />
+</form>]]></template>
+    <template title="th_search_result_bible_verse_bible" version_id="1433500490" version_string="1.0.0"><![CDATA[<li id="verse-{$verse.verse_id}" class="searchResult verse primaryContent">
+
+	<div class="listBlock posterAvatar">
+		<xen:avatar user="$verse" size="s" img="true" />
+	</div>
+
+	<div class="listBlock main">
+		<div class="titleText">
+			<span class="contentType">{xen:phrase th_bible_verse_bible}</span>
+			<h3 class="title"><a href="{xen:link bible, $verse}">{xen:helper snippet, $verse.text, 100, {xen:array 'term={$search.search_query}', 'fromStart=1', 'emClass=highlight', 'stripPlainTag=1'}}</a></h3>
+		</div>
+
+		<blockquote class="snippet">
+			<a href="{xen:link bible, $verse}">{xen:helper snippet, $verse.text, 150, {xen:array 'term={$search.search_query}', 'emClass=highlight', 'stripHtml=1'}}</a>
+		</blockquote>	
+
+		<div class="meta">
+			{$verse.book_title} {$verse.chapter}:{$verse.verse}{$verse.subverse}, {$verse.bible_title}
+		</div>
+	</div>
+</li>]]></template>
+    <template title="th_sidebar_post_list_bible" version_id="1433786497" version_string="1.1.1"><![CDATA[<ul id="PostList">
+<xen:foreach loop="$posts" value="$post">
+	<xen:include template="th_post_list_item_simple_bible" />
+</xen:foreach>
+</ul>]]></template>
+    <template title="th_verse_nav_bible" version_id="1433500490" version_string="1.0.0"><![CDATA[<xen:edithint template="page_nav.css" />
+
+<xen:if is="{$pageTotal} > 1">
+<div class="PageNav"
+	data-page="{$currentPage}"
+	data-range="{$range}"
+	data-start="{$startPage}"
+	data-end="{$endPage}"
+	data-last="{$pageTotal}"
+	data-sentinel="{$pageNumberSentinel}"
+	data-baseurl="{xen:link bible, {xen:array 'url_portion={$linkType}', 'chapter={$linkData}', 'verse={$pageNumberSentinel}'}, '_params={$linkParams}'}">
+	
+	<span class="pageNavHeader">{xen:phrase th_verse_x_of_y_bible, 'current={$currentPage}', 'total={$pageTotal}'}</span>
+	
+	<nav>
+		<xen:if is="{$prevPage}">
+			<a href="{xen:link bible, {xen:array 'url_portion={$linkType}', 'chapter={$linkData}', 'verse={xen:if "{$prevPage} > 1", $prevPage, 1}'}, '_params={$linkParams}'}" class="text">&lt; {xen:phrase prev}</a>
+			<xen:container var="$head.prev"><link rel="prev" href="{xen:link bible, {xen:array 'url_portion={$linkType}', 'chapter={$linkData}', 'verse={xen:if "{$prevPage} > 1", $prevPage, 1}'}, '_params={$linkParams}'}" /></xen:container>
+		</xen:if>
+		
+		<a href="{xen:link bible, {xen:array 'url_portion={$linkType}', 'chapter={$linkData}', 'verse=1'}, '_params={$linkParams}'}" class="{xen:if '1 == {$currentPage}', 'currentPage '}" rel="start">1</a>
+		
+		<xen:if is="{$pageTotal} > {$scrollThreshold}">
+			<a class="PageNavPrev {xen:if '{$startPage} <= 2', hidden}">&larr;</a> <span class="scrollable"><span class="items">
+		</xen:if>
+		
+		<xen:foreach loop="{$pages}" value="{$pageNumber}">
+			<a href="{xen:link bible, {xen:array 'url_portion={$linkType}', 'chapter={$linkData}', 'verse={$pageNumber}'}, '_params={$linkParams}'}" class="{xen:if '{$pageNumber} == {$currentPage}', 'currentPage'}">{$pageNumber}</a>
+		</xen:foreach>
+		
+		<xen:if is="{$pageTotal} > {$scrollThreshold}">
+			</span></span> <a class="PageNavNext {xen:if '{$endPage} + 1 >= {$pageTotal}', hidden}">&rarr;</a>
+		</xen:if>
+		
+		<a href="{xen:link bible, {xen:array 'url_portion={$linkType}', 'chapter={$linkData}', 'verse={$pageTotal}'}, '_params={$linkParams}'}" class="{xen:if '{$pageTotal} == {$currentPage}', 'currentPage'}">{$pageTotal}</a>
+		
+		<xen:if is="{$nextPage}">
+			<a href="{xen:link bible, {xen:array 'url_portion={$linkType}', 'chapter={$linkData}', 'verse={$nextPage}'}, '_params={$linkParams}'}" class="text">{xen:phrase next} &gt;</a>
+			<xen:container var="$head.next"><link rel="next" href="{xen:link bible, {xen:array 'url_portion={$linkType}', 'chapter={$linkData}', 'verse={$nextPage}'}, '_params={$linkParams}'}" /></xen:container>
+		</xen:if>
+		
+		<a href="{xen:link bible, {xen:array 'url_portion={$linkType}', 'chapter={$linkData}'}, '_params={$linkParams}'}" class="text">{xen:phrase th_view_in_context_bible}</a>
+	</nav>
+</div>
+</xen:if>]]></template>
+    <template title="th_verse_tooltip_bible" version_id="1433786497" version_string="1.1.1"><![CDATA[<div id="VerseTooltip">
+	<span class="arrow"><span></span></span>
+	
+	<div class="section">
+		<div class="primaryContent verseContent">
+			<span class="VerseContents">{xen:phrase loading}...</span>
+		</div>
+	</div>
+</div>
+<xen:require js="js/themehouse/bible/full/verse.js" />]]></template>
+  </templates>
+  <public_template_modifications>
+    <modification template="footer" modification_key="th_copyrightNotice_bible" description="Copyright notice for [⌂] Bible" execution_order="1" enabled="1" action="callback">
+      <find><![CDATA[/{xen:phrase (?:xenforo|extra)_copyright}/]]></find>
+      <replace><![CDATA[ThemeHouse_Listener_InitDependencies::copyrightNotice]]></replace>
+    </modification>
+    <modification template="search_form_tabs" modification_key="th_searchFormTabs_bible" description="Adds 'Bible Verses' tab to search form." execution_order="10" enabled="1" action="preg_replace">
+      <find><![CDATA[#(<xen:hook name="search_form_tabs">.*)(</xen:hook>)#Us]]></find>
+      <replace><![CDATA[${1}
+<li{xen:if "{$searchType} == 'bible_verse'", ' class="active"'}><a href="{xen:link search, '', 'type=bible_verse'}">{xen:phrase th_search_bible_verses_bible}</a></li>
+${2}]]></replace>
+    </modification>
+    <modification template="thread_view" modification_key="th_threadView_bible" description="Adds verse tooltip JS." execution_order="10" enabled="1" action="preg_replace">
+      <find><![CDATA[#$#]]></find>
+      <replace><![CDATA[<xen:include template="th_verse_tooltip_bible" />]]></replace>
+    </modification>
+  </public_template_modifications>
+  <bb_code_media_sites/>
+  <bb_codes>
+    <bb_code bb_code_id="verse" bb_code_mode="callback" has_option="optional" callback_class="ThemeHouse_Bible_BbCode_Verse" callback_method="quoteVerse" option_regex="#^[A-z]+|(?:[A-z0-9 ]+ [0-9]+:[0-9]+(-[0-9: ]+)?(,[A-z]+)?)$#" trim_lines_after="2" plain_children="0" disable_smilies="1" disable_nl2br="0" disable_autolink="1" allow_empty="0" allow_signature="1" editor_icon_url="" sprite_mode="0" active="1">
+      <replace_html><![CDATA[]]></replace_html>
+      <replace_html_email><![CDATA[]]></replace_html_email>
+      <replace_text><![CDATA[]]></replace_text>
+      <example><![CDATA[[VERSE=Genesis 1:1,WEB]In the beginning God created the heavens and the earth.[/VERSE]
+[VERSE]Mark 15:37-39[/VERSE]]]></example>
+    </bb_code>
+    <bb_code bb_code_id="versenum" bb_code_mode="replace" has_option="no" callback_class="" callback_method="" option_regex="" trim_lines_after="0" plain_children="0" disable_smilies="0" disable_nl2br="0" disable_autolink="0" allow_empty="0" allow_signature="1" editor_icon_url="" sprite_mode="0" active="1">
+      <replace_html><![CDATA[<sup class="versenum">{text}</sup> ]]></replace_html>
+      <replace_html_email><![CDATA[]]></replace_html_email>
+      <replace_text><![CDATA[]]></replace_text>
+      <example><![CDATA[]]></example>
+    </bb_code>
+  </bb_codes>
+</addon>
